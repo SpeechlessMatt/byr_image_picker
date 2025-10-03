@@ -10,14 +10,14 @@ class MethodChannelByrImagePicker extends ByrImagePickerPlatform {
   final methodChannel = const MethodChannel('byr_image_picker');
 
   @override
-  Future<String> getSelectedUri() async {
-    final uriString = await methodChannel.invokeMethod("getSelectedUri");
+  Future<String?> getSelectedPhotoPath() async {
+    final uriString = await methodChannel.invokeMethod("getSelectedPhotoPath");
     return uriString;
   }
 
   @override
-  Future<List<String>> getSelectedUris() async {
-    final uriStrings = await methodChannel.invokeMethod("getSelectedUri");
+  Future<List<String>?> getSelectedPhotoPaths() async {
+    final uriStrings = await methodChannel.invokeMethod("getSelectedPhotoPaths");
     return uriStrings;
   }
 

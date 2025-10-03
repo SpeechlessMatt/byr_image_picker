@@ -18,7 +18,7 @@ import android.provider.MediaStore
 //        }
 //    }
 
-// 这个是利用安卓MediaStore获取图片列表的方法
+// 利用安卓MediaStore获取图片列表
 fun getAlbums(context: Context): Map<String, MutableList<Uri>> {
     // 定义筛选的列
     val projection = arrayOf(

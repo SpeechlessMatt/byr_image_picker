@@ -10,7 +10,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 
 
-// 写成remember可以复用，肥肠好用啊！
+// 写成remember可以放compose组件里面复用，肥肠好用啊！
 // 相当于是把rememberLauncherForActivityResult细化封装了
 @Composable
 fun rememberPhotoPermissionLauncher(

@@ -1,12 +1,16 @@
 package com.example.byr_image_picker
 
 import android.app.Activity
+import android.content.Context
+import android.net.Uri
 import android.util.Log
 import android.view.ViewGroup
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -16,6 +20,14 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 
 /** ByrImagePickerPlugin
  * 一个超级好玩的方法调用MethodChannel，因为我发现他可以拿到flutter的activity，那我弹出个弹窗不是轻轻松松吗
@@ -43,23 +55,56 @@ class ByrImagePickerPlugin :
     ) {
         when (call.method) {
 
-            "getSelectedUri" -> {
-                getSelectedUri(result)
+            "getSelectedPhotoPath" -> {
+                Log.d("MethodCall", "call (getSelectedPhotoPath)")
+                getSelectedPhotoPath(result)
             }
 
-            "getSelectedUris" -> {
-                // 多选先不做了，我还有事情
-                result.notImplemented()
+            "getSelectedPhotoPaths" -> {
+                Log.d("MethodCall", "call (getSelectedPhotoPath)")
+                getSelectedPhotoPaths(result)
             }
 
             else -> result.notImplemented()
         }
     }
 
-    private fun getSelectedUri(result: Result) {
+    private fun getSelectedPhotoPath(result: Result) {
+        // 拿到activity
+        val act: ComponentActivity = (activity ?: return) as ComponentActivity
+        // 拉起compose view获得uri
+        getSelectedUri { uri ->
+            val path = getFilePathFromUri(act, uri)
+            closeImagePicker()
+            Log.d("Path", "selected: ${path.toString()}")
+            result.success(path)
+        }
+    }
+
+    private fun getSelectedPhotoPaths(result: Result) {
+        // 拿到activity
+        val act: ComponentActivity = (activity ?: return) as ComponentActivity
+        // 拉起compose view获得uris
+        getSelectedUris { uris ->
+            // 利用协程批量将文件放到temp然后发送绝对地址给flutter
+            act.lifecycleScope.launch {
+                val paths = withContext(Dispatchers.IO) {
+                    // 协程：挂起函数：getFilePathsFromUris()
+                    getFilePathsFromUris(act, uris)
+                }
+                closeImagePicker()
+                result.success(paths)
+            }
+        }
+    }
+
+    private fun getSelectedUri(
+        callbackWithSelectedUri: (Uri) -> Unit
+    ) {
         val act: ComponentActivity = (activity ?: return) as ComponentActivity
         if (composeView != null) return
 
+        // 注入compose view
         composeView = ComposeView(act).apply {
             setViewTreeSavedStateRegistryOwner(act)
             setViewTreeLifecycleOwner(act)
@@ -67,13 +112,13 @@ class ByrImagePickerPlugin :
                 ImagePickerController(
                     modifier = Modifier.fillMaxSize(),
                     isMultiSelected = false,
-                    onResultListString = {
-                        closeImagePicker()
-                        result.success(it.first())
+                    onResultListUri = {
+                        callbackWithSelectedUri(it.first())
+
                     },
                     onResultNull = {
                         closeImagePicker()
-                        result.notImplemented()
+//                        result.success(null)
                     },
                 )
             }
@@ -90,12 +135,14 @@ class ByrImagePickerPlugin :
         )
     }
 
-    private fun getSelectedUris(result: Result) {
+    // 未实现完
+    private fun getSelectedUris(
+        callbackWithSelectedUris: (List<Uri>) -> Unit
+    ) {
         val act: ComponentActivity = (activity ?: return) as ComponentActivity
         if (composeView != null) return
 
-//        val owner = act as? androidx.activity.ComponentActivity ?: return
-
+        // 注入compose view
         composeView = ComposeView(act).apply {
             setViewTreeSavedStateRegistryOwner(act)
             setViewTreeLifecycleOwner(act)
@@ -103,9 +150,8 @@ class ByrImagePickerPlugin :
                 ImagePickerController(
                     modifier = Modifier.fillMaxSize(),
                     isMultiSelected = false,
-                    onResultListString = {
-                        closeImagePicker()
-                        result.success(it)
+                    onResultListUri = {
+                        callbackWithSelectedUris(it)
                     },
                     onResultNull = { closeImagePicker() },
                 )

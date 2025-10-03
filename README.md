@@ -1,15 +1,11 @@
 # byr_image_picker
 
-A new Flutter plugin project.
+挺好看的一个image_picker，是一个安卓的flutter插件
 
-## Getting Started
+## 展示
 
-This project is a starting point for a Flutter
-[plug-in package](https://flutter.dev/to/develop-plugins),
-a specialized package that includes platform-specific implementation code for
-Android and/or iOS.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 原理介绍
+
+这里支持的安卓平台，安卓使用jetpack compose开发ui界面（因为jetpack compose我比较习惯），我将介绍一下插件的实现流程
 

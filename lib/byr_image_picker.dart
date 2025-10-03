@@ -2,11 +2,11 @@
 import 'byr_image_picker_platform_interface.dart';
 
 class ByrImagePicker {
-  static Future<String> getSelectedUri() {
-    return ByrImagePickerPlatform.instance.getSelectedUri();
+  static Future<String?> getSelectedPhotoPath() {
+    return ByrImagePickerPlatform.instance.getSelectedPhotoPath();
   }
 
-  static Future<List<String>> getSelectedUris() {
-    return ByrImagePickerPlatform.instance.getSelectedUris();
+  static Future<List<String>?> getSelectedPhotoPaths() {
+    return ByrImagePickerPlatform.instance.getSelectedPhotoPaths();
   }
 }

@@ -23,12 +23,12 @@ abstract class ByrImagePickerPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<String> getSelectedUri() {
-    throw UnimplementedError("getSelectedUri() has not been implemented.");
+  Future<String?> getSelectedPhotoPath() {
+    throw UnimplementedError("getSelectedPhotoPath() has not been implemented.");
   }
 
-  Future<List<String>> getSelectedUris() {
-    throw UnimplementedError("getSelectedUris() has not been implemented.");
+  Future<List<String>?> getSelectedPhotoPaths() {
+    throw UnimplementedError("getSelectedPhotoPaths() has not been implemented.");
   }
 
 }

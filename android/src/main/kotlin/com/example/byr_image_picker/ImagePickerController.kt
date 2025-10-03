@@ -35,7 +35,7 @@ import com.example.byr_image_picker.ui.ImagePickerView
 fun ImagePickerController(
     modifier: Modifier = Modifier,
     isMultiSelected: Boolean = false,
-    onResultListString: (List<String>) -> Unit,
+    onResultListUri: (List<Uri>) -> Unit,
     onResultNull: () -> Unit,
 ) {
     val ctx = LocalContext.current
@@ -49,7 +49,7 @@ fun ImagePickerController(
             if (uri != null) {
                 Log.d("PhotoPicker", "Selected URI: $uri")
                 // 全部转换成string返回
-                onResultListString(listOf(uri.toString()))
+                onResultListUri(listOf(uri))
             } else {
                 Log.d("PhotoPicker", "No media selected")
                 onResultNull()
@@ -67,8 +67,7 @@ fun ImagePickerController(
                 onResultNull()
             } else {
                 Log.d("PhotoPicker", "Selected URI: $uris")
-                // 全部转换成string返回
-                onResultListString(uris.map { it.toString() })
+                onResultListUri(uris)
             }
         }
 
@@ -127,9 +126,9 @@ fun ImagePickerController(
                 shouldShowImagePicker = false
                 onResultNull()
             },
-            onCloseWithUriString = {
+            onCloseWithUri = {
                 shouldShowImagePicker = false
-                onResultListString(listOf(it))
+                onResultListUri(listOf(it))
             },
         )
     }
