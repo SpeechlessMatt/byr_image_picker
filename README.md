@@ -34,3 +34,40 @@ Android 14之后采用更加严格的权限管理，用户可以通过选择“�
 采用coil3的`AsyncImage()`加载图片的略缩图和`LazyVerticalGrid()`懒加载减少性能开销
 
 若使用**多选图片**的方式（假设选择100张图片）会利用**协程并发**将图片加载到cache然后传回含有100个地址的列表
+
+## 使用方式
+
+导入插件：
+
+```
+// pubspec.yaml添加依赖
+dependencies:
+  byr_image_picker:
+    git: https://github.com/SpeechlessMatt/byr_image_picker
+```
+
+根目录下执行：
+
+```bash
+flutter pub get
+```
+
+单选模式下使用`getSelectedPhotoPath()`:
+
+```dart
+try {
+    final pickedPath = await ByrImagePicker.getSelectedPhotoPath();
+}
+```
+
+返回`String`或`null`
+
+多选模式下使用`getSelectedPhotoPaths(int maxSelection)`:
+
+```dart
+try {
+    final pickedPath = await ByrImagePicker.getSelectedPhotoPaths(10);
+}
+```
+
+返回`List<String>`或`null`
