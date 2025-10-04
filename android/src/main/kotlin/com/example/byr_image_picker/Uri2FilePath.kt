@@ -8,6 +8,10 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import java.io.File
+import java.util.concurrent.atomic.AtomicLong
+
+// 原子计数器，协程/线程并发安全
+private val counter = AtomicLong(0)
 
 // 这里获取临时文件对象
 fun getFileFromUri(context: Context, uri: Uri): File? {
@@ -27,7 +31,7 @@ fun getFileFromUri(context: Context, uri: Uri): File? {
 
         // 放缓存里面
         val cacheDir = context.cacheDir
-        val tempFile = File(cacheDir, "shared_${System.currentTimeMillis()}.${ext}")
+        val tempFile = File(cacheDir, "shared_${System.nanoTime()}_${counter.getAndIncrement()}.$ext")
         tempFile.outputStream().use { output ->
             inputStream.copyTo(output)
         }
