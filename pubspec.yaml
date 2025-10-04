@@ -1,7 +1,8 @@
 name: byr_image_picker
 description: "A new Flutter plugin project."
 version: 0.0.1
-homepage:
+homepage: https://github.com/SpeechlessMatt/byr_image_picker
+repository: https://github.com/SpeechlessMatt/byr_image_picker.git
 
 environment:
   sdk: ^3.9.2
