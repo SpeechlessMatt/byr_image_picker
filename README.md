@@ -57,6 +57,8 @@ flutter pub get
 ```dart
 try {
     final pickedPath = await ByrImagePicker.getSelectedPhotoPath();
+} on PlatformException catch (e) {
+    log("PlatformException ${e.message}");
 }
 ```
 
@@ -67,6 +69,8 @@ try {
 ```dart
 try {
     final pickedPath = await ByrImagePicker.getSelectedPhotoPaths(10);
+} on PlatformException catch (e) {
+    log("PlatformException ${e.message}");
 }
 ```
 
