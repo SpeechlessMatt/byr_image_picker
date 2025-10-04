@@ -52,6 +52,21 @@ dependencies:
 flutter pub get
 ```
 
+> 注意：flutter默认分支(stable)的android\app\src\main\kotlin\...\MainActivity.kt**使用的是老版本的FlutterActivity而不是新版(master,main分支)的FlutterFragmentActivity**，我们需要手动添加并修改：
+
+```kotlin
+// MainActivity.kt
+// 加上这一句
+import io.flutter.embedding.android.FlutterFragmentActivity
+
+// 本来是class MainActivity : FlutterActivity()，改成如下所示：
+class MainActivity : FlutterFragmentActivity()
+```
+
+---
+
+**调用方法：**
+
 单选模式下使用`getSelectedPhotoPath()`:
 
 ```dart
