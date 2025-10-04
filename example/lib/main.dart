@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
             onPressed: () async {
                 try {
                   // 单张
-                  final uri = await ByrImagePicker.getSelectedPhotoPath();
+                  final uri = await ByrImagePicker.getSelectedPhotoPaths(10);
                   print('单选URI: $uri');
 
                 } on PlatformException catch (e) {

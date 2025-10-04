@@ -8,6 +8,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,8 +23,10 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -44,6 +48,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -75,7 +80,7 @@ fun ImagePickerView(
     val albums = albumsMap.keys.toList()
 
     Column(modifier = modifier) {
-        Spacer(modifier = Modifier.height(70.dp))
+        Spacer(modifier = Modifier.height(75.dp))
 
         Surface(
             color = MaterialTheme.colorScheme.background,
@@ -158,6 +163,7 @@ fun ImagePickerView(
 
                 // 展示框
                 LazyVerticalGrid(
+                    modifier = Modifier.weight(1f),
                     columns = GridCells.Adaptive(minSize = 80.dp),
                     verticalArrangement = Arrangement.spacedBy(1.dp),
                     horizontalArrangement = Arrangement.spacedBy(1.dp),
@@ -165,7 +171,7 @@ fun ImagePickerView(
                     // ai告诉我这样写可以优化加载速度，不知道是不是真的
                     items(
                         count = currentUris.size,
-                        key = { currentUris[it] },
+                        key = { currentUris[it].toString() },
                         contentType = { "photo" }
                     ) { index ->
                         val uri = currentUris[index]
@@ -183,27 +189,22 @@ fun ImagePickerView(
                                 .aspectRatio(1f)
                                 .clickable(
                                     onClick = {
-                                        Toast.makeText(
-                                            context,
-                                            uri.toString(),
-                                            Toast.LENGTH_SHORT
-                                        ).show()
                                         onCloseWithUri(uri)
                                     }
                                 )
                         )
                     }
                 }
-                // 这个目的是撑满底部空间
-                Spacer(modifier = Modifier.weight(1f))
+
                 if (isPartialPermission) {
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         color = Color.LightGray
                     ) {
                         Text(
-                            modifier = Modifier.padding(10.dp),
-                            text = "您以设置只访问部分照片，建议改为「允许访问所有照片」"
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                            text = "您以设置只访问部分照片，建议改为「允许访问所有照片」",
+                            fontSize = 12.sp
                         )
                     }
                 }
@@ -215,15 +216,19 @@ fun ImagePickerView(
 @Composable
 fun ImagesPickerView(
     modifier: Modifier = Modifier,
+    maxSelection: Int,
     isPartialPermission: Boolean = false,
     albumsMap: Map<String, List<Uri>>,
     onClose: () -> Unit,
-    onCloseWithUri: (Uri) -> Unit
+    onCloseWithUris: (List<Uri>) -> Unit
 ) {
     val context = LocalContext.current
 
     // 当前选中相册
     var selectedAlbum by rememberSaveable { mutableStateOf(albumsMap.keys.firstOrNull() ?: "") }
+
+    val selectedPhotos = remember { mutableStateSetOf<Uri>() }
+
     // 当前相册对应的 Uri 列表
     val currentUris by remember(selectedAlbum) {
         derivedStateOf { albumsMap[selectedAlbum].orEmpty() }
@@ -239,7 +244,7 @@ fun ImagesPickerView(
     val albums = albumsMap.keys.toList()
 
     Column(modifier = modifier) {
-        Spacer(modifier = Modifier.height(70.dp))
+        Spacer(modifier = Modifier.height(75.dp))
 
         Surface(
             color = MaterialTheme.colorScheme.background,
@@ -322,6 +327,7 @@ fun ImagesPickerView(
 
                 // 展示框
                 LazyVerticalGrid(
+                    modifier = Modifier.weight(1f),
                     columns = GridCells.Adaptive(minSize = 80.dp),
                     verticalArrangement = Arrangement.spacedBy(1.dp),
                     horizontalArrangement = Arrangement.spacedBy(1.dp),
@@ -329,45 +335,113 @@ fun ImagesPickerView(
                     // ai告诉我这样写可以优化加载速度，不知道是不是真的
                     items(
                         count = currentUris.size,
-                        key = { currentUris[it] },
+                        key = { currentUris[it].toString() },
                         contentType = { "photo" }
                     ) { index ->
                         val uri = currentUris[index]
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(uri)
-                                .crossfade(true)           // 淡入动画
-                                .size(256)       // 按需原尺寸；想再快就写 .size(256)
-                                .memoryCacheKey(uri.toString())
-                                .build(),          // 直接把原始 URI 给 Coil
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(1f)
-                                .clickable(
-                                    onClick = {
-                                        Toast.makeText(
-                                            context,
-                                            uri.toString(),
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                        onCloseWithUri(uri)
-                                    }
-                                )
-                        )
+                        Box(
+                            modifier = Modifier.aspectRatio(1f)
+                        ) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(uri)
+                                    .crossfade(true)           // 淡入动画
+                                    .size(256)       // 按需原尺寸；想再快就写 .size(256)
+                                    .memoryCacheKey(uri.toString())
+                                    .build(),          // 直接把原始 URI 给 Coil
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(1f)
+                                    .clickable(
+                                        onClick = {
+                                            if (uri in selectedPhotos)
+                                                selectedPhotos.remove(uri)
+
+                                            else if (selectedPhotos.size == maxSelection) {
+                                                Toast.makeText(
+                                                    context,
+                                                    "最多选择${maxSelection}张照片",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                return@clickable
+
+                                            } else {
+                                                selectedPhotos.add(uri)
+                                            }
+
+                                        }
+                                    )
+                            )
+
+                            Icon(
+                                modifier = Modifier
+                                    .padding(4.dp)
+                                    .align(Alignment.TopStart)
+                                    .clickable(
+                                        onClick = {
+                                            if (uri in selectedPhotos)
+                                                selectedPhotos.remove(uri)
+                                            else
+                                                selectedPhotos.add(uri)
+                                        }
+                                    ),
+                                imageVector = if (uri in selectedPhotos)
+                                    Icons.Filled.CheckCircle
+                                else
+                                    Icons.Outlined.CheckCircle,
+                                contentDescription = null,
+                                tint = if (uri in selectedPhotos)
+                                // 选中色
+                                    Color(0xFF2196F3)
+                                else
+                                // 未选中色
+                                    Color(0x80FFFFFF),
+                            )
+                        }
                     }
                 }
-                // 这个目的是撑满底部空间
-                Spacer(modifier = Modifier.weight(1f))
+
                 if (isPartialPermission) {
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         color = Color.LightGray
                     ) {
                         Text(
-                            modifier = Modifier.padding(10.dp),
-                            text = "您以设置只访问部分照片，建议改为「允许访问所有照片」"
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                            text = "您以设置只访问部分照片，建议改为「允许访问所有照片」",
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 15.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .padding(start = 25.dp)
+                            .weight(1f),
+                        text = "已选：${selectedPhotos.size} 张",
+                        fontSize = 15.sp
+                    )
+                    Surface(
+                        modifier = Modifier
+                            .padding(end = 25.dp)
+                            .clickable(
+                                onClick = {
+                                    onCloseWithUris(selectedPhotos.toList())
+                                }
+                            ),
+                        shape = RoundedCornerShape(50),
+                        color = Color.Gray.copy(alpha = 0.2f)
+                    ) {
+                        Text(
+                            modifier = Modifier.padding(horizontal = 15.dp, vertical = 5.dp),
+                            text = "确定"
                         )
                     }
                 }

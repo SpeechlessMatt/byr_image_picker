@@ -29,12 +29,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import com.example.byr_image_picker.ui.ImagePickerView
+import com.example.byr_image_picker.ui.ImagesPickerView
 
 // 这是一个控制器，用来决定使用原生picker还是自带的picker
 @Composable
 fun ImagePickerController(
     modifier: Modifier = Modifier,
     isMultiSelected: Boolean = false,
+    maxSelection: Int = 1,
     onResultListUri: (List<Uri>) -> Unit,
     onResultNull: () -> Unit,
 ) {
@@ -48,7 +50,6 @@ fun ImagePickerController(
         { uri ->
             if (uri != null) {
                 Log.d("PhotoPicker", "Selected URI: $uri")
-                // 全部转换成string返回
                 onResultListUri(listOf(uri))
             } else {
                 Log.d("PhotoPicker", "No media selected")
@@ -115,22 +116,41 @@ fun ImagePickerController(
         exit = slideOutVertically { fullHeight -> fullHeight }  // 从 0 → fullHeight
                 + fadeOut()
     ) {
-        // 这里不用viewmodel这么复杂，
-        // 所以业务逻辑和ui也不用抽离得太彻底，
-        // 我就把albumsMap直接传进去吧，不想花太多时间了
-        ImagePickerView(
-            modifier = modifier,
-            isPartialPermission = isPartialPermission,
-            albumsMap = albumsMap.value,
-            onClose = {
-                shouldShowImagePicker = false
-                onResultNull()
-            },
-            onCloseWithUri = {
-                shouldShowImagePicker = false
-                onResultListUri(listOf(it))
-            },
-        )
+
+        if (!isMultiSelected) {
+            // 这里不用viewmodel这么复杂，
+            // 所以业务逻辑和ui也不用抽离得太彻底，
+            // 我就把albumsMap直接传进去吧，不想花太多时间了
+            ImagePickerView(
+                modifier = modifier,
+                isPartialPermission = isPartialPermission,
+                albumsMap = albumsMap.value,
+                onClose = {
+                    shouldShowImagePicker = false
+                    onResultNull()
+                },
+                onCloseWithUri = {
+                    shouldShowImagePicker = false
+                    onResultListUri(listOf(it))
+                },
+            )
+        } else {
+            ImagesPickerView(
+                modifier = modifier,
+                isPartialPermission = isPartialPermission,
+                albumsMap = albumsMap.value,
+                onClose = {
+                    shouldShowImagePicker = false
+                    onResultNull()
+                },
+                onCloseWithUris = {
+                    shouldShowImagePicker = false
+                    onResultListUri(it)
+                },
+                maxSelection = maxSelection,
+            )
+        }
+
     }
 
     // 权限申请launcher，这是一个控制器
@@ -177,5 +197,6 @@ fun ImagePickerController(
     // 防止launcher还没有初始化你就launch了导致：Launcher has not been initialized
     LaunchedEffect(Unit) {
         permissionLauncher.launch(permissionsArray)
+        Log.d("permission", "permissionLauncher Launch")
     }
 }

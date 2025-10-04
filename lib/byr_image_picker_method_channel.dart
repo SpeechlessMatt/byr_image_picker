@@ -16,9 +16,13 @@ class MethodChannelByrImagePicker extends ByrImagePickerPlatform {
   }
 
   @override
-  Future<List<String>?> getSelectedPhotoPaths() async {
-    final uriStrings = await methodChannel.invokeMethod("getSelectedPhotoPaths");
-    return uriStrings;
+  Future<List<String>?> getSelectedPhotoPaths(int maxSelection) async {
+    final uriList = await methodChannel.invokeMethod("getSelectedPhotoPaths",{'maxSelection': maxSelection});
+    if (uriList is List) {
+      final uriStrings = uriList.cast<String>();
+      return uriStrings;
+    }
+    return null;
   }
 
 }

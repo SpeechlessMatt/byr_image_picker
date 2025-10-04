@@ -61,8 +61,9 @@ class ByrImagePickerPlugin :
             }
 
             "getSelectedPhotoPaths" -> {
-                Log.d("MethodCall", "call (getSelectedPhotoPath)")
-                getSelectedPhotoPaths(result)
+                Log.d("MethodCall", "call (getSelectedPhotoPaths)")
+                val maxSelection: Int = call.argument<Int>("maxSelection") ?: 10
+                getSelectedPhotoPaths(result, maxSelection)
             }
 
             else -> result.notImplemented()
@@ -81,18 +82,20 @@ class ByrImagePickerPlugin :
         }
     }
 
-    private fun getSelectedPhotoPaths(result: Result) {
+    private fun getSelectedPhotoPaths(result: Result, maxSelection: Int) {
         // 拿到activity
         val act: ComponentActivity = (activity ?: return) as ComponentActivity
         // 拉起compose view获得uris
-        getSelectedUris { uris ->
+        getSelectedUris(maxSelection) { uris ->
             // 利用协程批量将文件放到temp然后发送绝对地址给flutter
             act.lifecycleScope.launch {
+                Log.d("ktx", "start: $uris")
                 val paths = withContext(Dispatchers.IO) {
                     // 协程：挂起函数：getFilePathsFromUris()
                     getFilePathsFromUris(act, uris)
                 }
                 closeImagePicker()
+                Log.d("ktx", "finish: $paths")
                 result.success(paths)
             }
         }
@@ -109,6 +112,9 @@ class ByrImagePickerPlugin :
             setViewTreeSavedStateRegistryOwner(act)
             setViewTreeLifecycleOwner(act)
             setContent {
+                // 好，这个时候可能会觉得很怪，为啥这里不分开写成两种
+                // 一个多选一个不多选
+                // 因为这里面含有权限管理和拒绝后多选使用系统picker的选项
                 ImagePickerController(
                     modifier = Modifier.fillMaxSize(),
                     isMultiSelected = false,
@@ -135,8 +141,11 @@ class ByrImagePickerPlugin :
         )
     }
 
-    // 未实现完
+    // 其实和上面那个几乎一模一样，别问我为啥要分开写，
+    // 为了以后维护简单些吧
+    // 获得uri列表
     private fun getSelectedUris(
+        maxSelection: Int,
         callbackWithSelectedUris: (List<Uri>) -> Unit
     ) {
         val act: ComponentActivity = (activity ?: return) as ComponentActivity
@@ -147,9 +156,13 @@ class ByrImagePickerPlugin :
             setViewTreeSavedStateRegistryOwner(act)
             setViewTreeLifecycleOwner(act)
             setContent {
+                // 好，这个时候可能会觉得很怪，为啥这里不分开写成两种
+                // 一个多选一个不多选
+                // 因为这里面含有权限管理和拒绝后多选使用系统picker的选项
                 ImagePickerController(
                     modifier = Modifier.fillMaxSize(),
-                    isMultiSelected = false,
+                    isMultiSelected = true,
+                    maxSelection = maxSelection,
                     onResultListUri = {
                         callbackWithSelectedUris(it)
                     },

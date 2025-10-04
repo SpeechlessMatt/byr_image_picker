@@ -4,6 +4,7 @@ import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.READ_MEDIA_IMAGES
 import android.Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
 import android.os.Build
+import android.util.Log
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -22,6 +23,7 @@ fun rememberPhotoPermissionLauncher(
     return rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { grantedMap ->
+        Log.d("permission", "get permission result")
         // 最低版本安卓都支持,直接用val
         val readStorage = grantedMap[READ_EXTERNAL_STORAGE] == true
 

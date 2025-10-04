@@ -6,7 +6,7 @@ class ByrImagePicker {
     return ByrImagePickerPlatform.instance.getSelectedPhotoPath();
   }
 
-  static Future<List<String>?> getSelectedPhotoPaths() {
-    return ByrImagePickerPlatform.instance.getSelectedPhotoPaths();
+  static Future<List<String>?> getSelectedPhotoPaths(int maxSelection) {
+    return ByrImagePickerPlatform.instance.getSelectedPhotoPaths(maxSelection);
   }
 }

@@ -40,7 +40,7 @@ fun getFileFromUri(context: Context, uri: Uri): File? {
 
 // 小小封装一下，保证对外形式统一，以后我自己写项目也可能用的上
 fun getFilePathFromUri(context: Context, uri: Uri): String? {
-    return getFileFromUri(context, uri)?.absolutePath
+    return getFileFromUri(context, uri)?.absolutePath.toString()
 }
 
 // 这里获取临时文件的绝对地址列表: 协程加速！！！
@@ -49,5 +49,5 @@ suspend fun getFilePathsFromUris(context: Context, uris: List<Uri>): List<String
         uris.map { uri ->
             async { getFileFromUri(context, uri) } // 转换成listOf(async{}, async{}...)
         }.awaitAll() // 等待所有子协程
-            .mapNotNull { it?.absolutePath } // 过滤失败项
+            .mapNotNull { it?.absolutePath.toString() } // 过滤失败项
     }
