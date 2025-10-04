@@ -43,7 +43,7 @@ Android 14之后采用更加严格的权限管理，用户可以通过选择“�
 // pubspec.yaml添加依赖
 dependencies:
   byr_image_picker:
-    git: https://github.com/SpeechlessMatt/byr_image_picker
+    git: https://github.com/SpeechlessMatt/byr_image_picker.git
 ```
 
 根目录下执行：
