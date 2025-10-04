@@ -1,3 +1,6 @@
+import 'dart:developer';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 // import 'dart:async';
 
@@ -13,26 +16,58 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: const Text("Flutter 调用 Compose Overlay")),
-        body: Center(
-          child: ElevatedButton(
-            onPressed: () async {
-                try {
-                  // 单张
-                  final uri = await ByrImagePicker.getSelectedPhotoPaths(10);
-                  print('单选URI: $uri');
+    return MaterialApp(home: ExampleAppBody());
+  }
+}
 
-                } on PlatformException catch (e) {
-                  print('用户取消或出错: ${e.message}');
-                }
-              // ByrImagePicker.getSelectedUri();
-            },
-            child: const Text("显示 Compose UI"),
-          ),
-        ),
+class ExampleAppBody extends StatefulWidget {
+  const ExampleAppBody({super.key});
+
+  @override
+  State<ExampleAppBody> createState() => _ExampleAppBody();
+}
+
+class _ExampleAppBody extends State<ExampleAppBody> {
+  final List<File> files = [];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Byr_image_picker demo")),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          try {
+            final pickedPath = await ByrImagePicker.getSelectedPhotoPaths(10);
+            if (pickedPath != null) {
+              setState(() => files.addAll(pickedPath.map((e) => File(e))));
+            }
+          } on PlatformException catch (e) {
+            log("PlatformException ${e.message}");
+          }
+        },
+        child: const Icon(Icons.add),
       ),
+      body: PhotoGrid(files: files),
+    );
+  }
+}
+
+class PhotoGrid extends StatelessWidget {
+  final List<File> files;
+
+  const PhotoGrid({super.key, required this.files});
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      padding: EdgeInsets.all(4),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3, // 三列
+        crossAxisSpacing: 4,
+        mainAxisSpacing: 4,
+      ),
+      itemCount: files.length,
+      itemBuilder: (_, i) => Image.file(files[i], fit: BoxFit.cover),
     );
   }
 }

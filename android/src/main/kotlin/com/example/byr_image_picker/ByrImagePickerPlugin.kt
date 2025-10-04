@@ -1,15 +1,14 @@
 package com.example.byr_image_picker
 
 import android.app.Activity
-import android.content.Context
 import android.net.Uri
 import android.util.Log
 import android.view.ViewGroup
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
@@ -20,14 +19,9 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
 
 /** ByrImagePickerPlugin
  * 一个超级好玩的方法调用MethodChannel，因为我发现他可以拿到flutter的activity，那我弹出个弹窗不是轻轻松松吗
@@ -112,6 +106,10 @@ class ByrImagePickerPlugin :
             setViewTreeSavedStateRegistryOwner(act)
             setViewTreeLifecycleOwner(act)
             setContent {
+                // 劫持返回键返回到flutter而不是返回到桌面
+                BackHandler {
+                    closeImagePicker()
+                }
                 // 好，这个时候可能会觉得很怪，为啥这里不分开写成两种
                 // 一个多选一个不多选
                 // 因为这里面含有权限管理和拒绝后多选使用系统picker的选项
@@ -120,11 +118,9 @@ class ByrImagePickerPlugin :
                     isMultiSelected = false,
                     onResultListUri = {
                         callbackWithSelectedUri(it.first())
-
                     },
                     onResultNull = {
                         closeImagePicker()
-//                        result.success(null)
                     },
                 )
             }
@@ -156,6 +152,10 @@ class ByrImagePickerPlugin :
             setViewTreeSavedStateRegistryOwner(act)
             setViewTreeLifecycleOwner(act)
             setContent {
+                // 劫持返回键返回到flutter而不是返回到桌面
+                BackHandler {
+                    closeImagePicker()
+                }
                 // 好，这个时候可能会觉得很怪，为啥这里不分开写成两种
                 // 一个多选一个不多选
                 // 因为这里面含有权限管理和拒绝后多选使用系统picker的选项
@@ -183,10 +183,10 @@ class ByrImagePickerPlugin :
     }
 
     private fun closeImagePicker() {
-        // 直接销毁composeView
         composeView?.let {
             val parent = it.parent as? ViewGroup
             parent?.removeView(it)
+            // 直接销毁composeView
             it.disposeComposition()
             composeView = null
         }
@@ -198,6 +198,7 @@ class ByrImagePickerPlugin :
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        // 拿到flutterFragmentActivity
         activity = binding.activity
     }
 
@@ -206,6 +207,7 @@ class ByrImagePickerPlugin :
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        // 拿到flutterFragmentActivity
         activity = binding.activity
     }
 

@@ -1,4 +1,3 @@
-
 import 'byr_image_picker_platform_interface.dart';
 
 class ByrImagePicker {

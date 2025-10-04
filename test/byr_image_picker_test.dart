@@ -13,10 +13,7 @@ class MockByrImagePickerPlatform
   @override
   Future<List<String>?> getSelectedPhotoPaths(int maxSelection) async {
     if (maxSelection <= 0) throw ArgumentError('maxCount must > 0');
-    return [
-      '/tmp/test1',
-      '/tmp/test',
-    ];
+    return ['/tmp/test1', '/tmp/test'];
   }
 }
 
