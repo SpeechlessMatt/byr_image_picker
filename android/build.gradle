@@ -18,6 +18,7 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        gradlePluginPortal()
     }
 }
 
@@ -50,7 +51,7 @@ android {
 
     defaultConfig {
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 34
     }
 
     dependencies {
