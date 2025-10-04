@@ -1,11 +1,36 @@
 # byr_image_picker
 
-挺好看的一个image_picker，是一个安卓的flutter插件
+Android自定义image_picker，自带权限控制，拥有简洁的界面，和协程加速，可以减少MethodChannel带来的内存负担和数据交换的时间（基于原生实现）
 
 ## 展示
 
+暂无图片
 
 ## 原理介绍
 
-这里支持的安卓平台，安卓使用jetpack compose开发ui界面（因为jetpack compose我比较习惯），我将介绍一下插件的实现流程
+本插件使用**Jetpack Compose**开发UI，通过MethodChannel调用函数获得flutterFragmentActvity后通过`addContentView()`拉起Compose View
 
+根据用户的选择将图片通过uri保存文件流到cache，再利用MethodChannel回传绝对地址供flutter调用
+
+因为调用的是**绝对地址**，极大的促进了flutter的多平台统一性（因为安卓对绝对地址读取有沙箱限制，但是私有目录的绝对地址是可以调用的）
+
+而且只传绝对地址的设计（多选就是绝对地址列表），让MethodChannel几乎不会发生内存泄露
+
+## AddContentView
+
+因为实现比较简单，故直接利用`addContentView()`加入视图
+
+## 权限管理
+
+Android 14之后采用更加严格的权限管理，用户可以通过选择“拒绝”、“部分照片可见”、“全部照片可见”三种方式给软件赋予照片权限，本插件采取三种判断：
+- 若用户拒绝相册读取权限：使用系统自带的image picker获取图片
+- 若用户选择部分照片可见：虽然会弹出自定义的image picker但是会有提示，建议用户访问所有照片，因为如果选择部分照片可见会让用户经历两个image picker导致体验不佳
+- 若用户选择全部照片可见：使用自定义image picker
+
+> Note: 经过真机测试，MIUI和HyperOS系统的权限照明灯系统设计可能会误报读取照片权限次数，实际只在弹出image picker的时候获取一次相册读取权限
+
+## 性能优化设计
+
+采用coil3的`AsyncImage()`加载图片的略缩图和`LazyVerticalGrid()`懒加载减少性能开销
+
+若使用**多选图片**的方式（假设选择100张图片）会利用**协程并发**将图片加载到cache然后传回含有100个地址的列表
